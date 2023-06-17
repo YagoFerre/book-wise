@@ -1,19 +1,19 @@
 import Image from 'next/image'
+
 import { Star } from '@phosphor-icons/react'
 
 import bookImage from '../../../assets/book.png'
 
 import { BookAuthor, BookTitle, Container, Content, Rating } from './styles'
-import { LinkProps } from 'next/link'
 
-interface Props extends LinkProps {
+interface Props {
   width: number
   height: number
 }
 
-export function BookCard({ width, height, ...rest }: Props) {
+export function BookCard({ width, height }: Props) {
   return (
-    <Container {...rest}>
+    <Container>
       <Image
         src={bookImage}
         alt="Capa do livro"

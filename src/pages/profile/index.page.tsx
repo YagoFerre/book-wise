@@ -1,4 +1,10 @@
-import { BookOpen, BookmarkSimple, Books, User, UserList } from '@phosphor-icons/react'
+import {
+  BookOpen,
+  BookmarkSimple,
+  Books,
+  User,
+  UserList,
+} from '@phosphor-icons/react'
 
 import { SideBar } from '../components/SideBar'
 import { Input } from '../components/Input'
@@ -45,7 +51,12 @@ export default function Profile() {
                 author="Aditya Bhargava"
                 latestData="Há 4 meses"
               />
-              <BookCardProfile href="/" bookTitle="O Hobbit" author="J.R.R. Tolkien" latestData="Há 2 dias" />
+              <BookCardProfile
+                href="/"
+                bookTitle="O Hobbit"
+                author="J.R.R. Tolkien"
+                latestData="Há 2 dias"
+              />
               <BookCardProfile
                 href="/"
                 bookTitle="O guia do mochileiro das galáxias"

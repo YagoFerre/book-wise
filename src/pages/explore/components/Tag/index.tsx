@@ -1,5 +1,5 @@
 import { ComponentProps } from 'react'
-import { Container } from './style'
+import { Container } from './styles'
 
 interface Props extends ComponentProps<typeof Container> {
   title: string

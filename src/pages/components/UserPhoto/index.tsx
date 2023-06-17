@@ -9,5 +9,14 @@ interface Props extends ImageProps {
 }
 
 export function UserPhoto({ src, size, alt, ...rest }: Props) {
-  return <UserImage src={src} alt={alt} quality={100} width={size} height={size} {...rest} />
+  return (
+    <UserImage
+      src={src}
+      alt={alt}
+      quality={100}
+      width={size}
+      height={size}
+      {...rest}
+    />
+  )
 }

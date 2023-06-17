@@ -1,8 +1,6 @@
 import { styled } from '@/stitches.config'
 
-import Link from 'next/link'
-
-export const Container = styled(Link, {
+export const Container = styled('div', {
   display: 'flex',
   width: '100%',
   maxWidth: '38rem',
@@ -32,6 +30,8 @@ export const BookTitle = styled('p', {
   fontSize: '$md',
   lineHeight: '$short',
   fontWeight: '$bold',
+
+  textAlign: 'start',
 })
 
 export const BookAuthor = styled('p', {
@@ -39,6 +39,8 @@ export const BookAuthor = styled('p', {
   fontSize: '$sm',
   lineHeight: '$base',
   fontWeight: '$regular',
+
+  textAlign: 'start',
 })
 
 export const Rating = styled('div', {

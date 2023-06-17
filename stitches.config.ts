@@ -14,13 +14,13 @@ export const { styled, getCssText, globalCss } = createStitches({
       4: '1rem', // 16px
       5: '1.25rem', // 20px
       6: '1.5rem', // 24px
-      7: '1.75rem',
+      7: '1.75rem', // 28px
       8: '2rem', // 32px
       10: '2.5rem', // 40px
     },
 
     fontSizes: {
-      xs: '0.75rem',
+      xs: '0.75rem', // 12px
       sm: '0.875rem', // 14px
       md: '1rem', // 16px
       lg: '1.125rem', // 18px

@@ -1,5 +1,7 @@
 import { CaretRight, Star } from '@phosphor-icons/react'
 
+import bookImage from '../../../../assets/book.png'
+
 import {
   BookAuthor,
   BookCover,
@@ -15,8 +17,6 @@ import {
   SubtitleBox,
 } from './styles'
 
-import bookImage from '../../../../assets/book.png'
-
 export function LatestReading() {
   return (
     <Container>
@@ -29,7 +29,13 @@ export function LatestReading() {
       </SubtitleBox>
 
       <LatestBook>
-        <BookCover src={bookImage} alt="Capa do livro" quality={100} width={108} height={152} />
+        <BookCover
+          src={bookImage}
+          alt="Capa do livro"
+          quality={100}
+          width={108}
+          height={152}
+        />
 
         <Content>
           <Head>
@@ -51,8 +57,9 @@ export function LatestReading() {
             </div>
 
             <BookDescription>
-              Nec tempor nunc in egestas. Euismod nisi eleifend at et in sagittis. Penatibus id vestibulum imperdiet a
-              at imperdiet lectu...
+              Nec tempor nunc in egestas. Euismod nisi eleifend at et in
+              sagittis. Penatibus id vestibulum imperdiet a at imperdiet
+              lectu...
             </BookDescription>
           </Main>
         </Content>
