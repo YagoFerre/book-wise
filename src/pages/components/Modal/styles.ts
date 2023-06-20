@@ -84,7 +84,7 @@ export const Title = styled('p', {
   lineHeight: '$base',
 })
 
-export const CommentBox = styled('div', {
+export const CommentBox = styled('form', {
   display: 'flex',
   width: '100%',
   flexDirection: 'column',

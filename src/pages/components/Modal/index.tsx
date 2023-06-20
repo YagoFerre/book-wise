@@ -32,27 +32,47 @@ import {
 
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import * as z from 'zod'
+
+import { api } from '@/src/lib/axios'
 
 const commentSchema = z.object({
-  comment: z.string().trim(),
+  description: z.string().trim(),
+  rate: z
+    .number()
+    .min(0, { message: 'Avaliação é obrigatória' })
+    .max(5)
+    .transform((value) => value + 1),
 })
 
-type commentFormData = z.infer<typeof commentSchema>
+export type CommentFormData = z.infer<typeof commentSchema>
 
 export function Modal() {
-  const { register, handleSubmit } = useForm<commentFormData>({
+  const { register, handleSubmit, watch, setValue } = useForm<CommentFormData>({
     resolver: zodResolver(commentSchema),
+    defaultValues: {
+      rate: undefined,
+    },
   })
 
-  const [isOpen, setIsOpen] = useState(false)
-  const [user, setUser] = useState(true)
+  const rate = watch('rate')
 
-  function handleComment() {
-    if (user) {
-      setIsOpen(true)
+  const [isOpen, setIsOpen] = useState(false)
+  // const [user, setUser] = useState(true)
+
+  function handleOpenLoginModal() {
+    setIsOpen(true)
+  }
+
+  async function handleComment(data: CommentFormData) {
+    try {
+      await api.post('/rating', {
+        rate: data.rate,
+        description: data.description,
+      })
+    } catch (err) {
+      console.log(err)
     }
-    console.log('enviou')
   }
 
   return (
@@ -73,35 +93,36 @@ export function Modal() {
             <Comments>
               <CommentsHeader>
                 <Title>Avaliações</Title>
-                {!isOpen && <LoginModal onComment={handleComment} />}
+                {!isOpen && <LoginModal onComment={handleOpenLoginModal} />}
               </CommentsHeader>
 
               {isOpen && (
-                <CommentBox>
+                <CommentBox onSubmit={handleSubmit(handleComment)}>
                   <Header>
                     <UserPhoto src={eu} alt="Foto do usuário" size={40} />
                     <Username>Yago Ferreira</Username>
 
                     <Rating>
-                      <Star size={28} color="#8381D9" weight="fill" />
-                      <Star size={28} color="#8381D9" weight="fill" />
-                      <Star size={28} color="#8381D9" weight="fill" />
-                      <Star size={28} color="#8381D9" weight="thin" />
-                      <Star size={28} color="#8381D9" weight="thin" />
+                      {[...Array(5)].map((_, index) => (
+                        <Star
+                          key={index}
+                          size={28}
+                          color="#8381D9"
+                          weight={index <= rate! ? 'fill' : 'thin'}
+                          onClick={() => setValue('rate', index)}
+                          cursor="pointer"
+                        />
+                      ))}
                     </Rating>
                   </Header>
 
-                  <TextInput
-                    placeholder="Escreva sua avaliação"
-                    maxLength={450}
-                    {...register('comment')}
-                  />
+                  <TextInput placeholder="Escreva sua avaliação" maxLength={450} {...register('description')} />
 
                   <Actions>
                     <ButtonIcon onClick={() => setIsOpen(false)}>
                       <X size={24} color="#8381D9" />
                     </ButtonIcon>
-                    <ButtonIcon onClick={handleSubmit(handleComment)}>
+                    <ButtonIcon onSubmit={handleSubmit(handleComment)}>
                       <Check size={24} color="#50B2C0" />
                     </ButtonIcon>
                   </Actions>
