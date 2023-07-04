@@ -41,10 +41,11 @@ export const InputBox = styled('div', {
 })
 
 export const Categories = styled('div', {
-  display: 'flex',
-  width: '100%',
-  gap: '$3',
+  display: 'grid',
   alignItems: 'center',
+  width: '100%',
+  gridTemplateColumns: 'repeat(9, 1fr)',
+  gridGap: '$3',
 })
 
 export const BooksContainer = styled('div', {

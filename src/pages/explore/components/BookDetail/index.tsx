@@ -1,8 +1,7 @@
 import Image from 'next/image'
 
+import { Book } from '@prisma/client'
 import { BookOpen, BookmarkSimple, Star } from '@phosphor-icons/react'
-
-import bookImage from '../../../../assets/book.png'
 
 import {
   AboutBox,
@@ -17,12 +16,17 @@ import {
   RatingContainer,
 } from './styles'
 
-export function BookDetail() {
+interface Props {
+  book: Book
+}
+
+export function BookDetail({ book }: Props) {
+  console.log(book)
   return (
     <Container>
       <BookContainer>
         <Image
-          src={bookImage}
+          src={book.cover_url}
           alt="Capa do livro"
           width={171}
           height={242}
@@ -32,21 +36,17 @@ export function BookDetail() {
 
         <BookContent>
           <div>
-            <BookTitle>
-              14 Hábitos de Desenvolvedores Altamente Produtivos
-            </BookTitle>
-            <BookAuthor>Zeno Rocha</BookAuthor>
+            <BookTitle>{book.name}</BookTitle>
+            <BookAuthor>{book.author}</BookAuthor>
           </div>
 
           <RatingContainer>
             <Rating>
-              <Star size={20} color="#8381D9" weight="fill" />
-              <Star size={20} color="#8381D9" weight="fill" />
-              <Star size={20} color="#8381D9" weight="fill" />
-              <Star size={20} color="#8381D9" weight="thin" />
-              <Star size={20} color="#8381D9" weight="thin" />
+              {[...Array(5)].map((_, index) => (
+                <Star key={index} size={20} color="#8381D9" weight={index < book.rate ? 'fill' : 'thin'} />
+              ))}
             </Rating>
-            <span>3 avaliações</span>
+            <span>{book.ratings.length} avaliações</span>
           </RatingContainer>
         </BookContent>
       </BookContainer>
@@ -56,14 +56,16 @@ export function BookDetail() {
           <BookmarkSimple size={24} color="#50B2C0" />
           <Box>
             <p>Categoria</p>
-            <span>Computação, educação</span>
+            <span>
+              {book.categories[0].category.name}, {book.categories[1].category.name}
+            </span>
           </Box>
         </AboutBox>
         <AboutBox>
           <BookOpen size={24} color="#50B2C0" />
           <Box>
             <p>Páginas</p>
-            <span>160</span>
+            <span>{book.total_pages}</span>
           </Box>
         </AboutBox>
       </AboutContainer>

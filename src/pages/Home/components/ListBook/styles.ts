@@ -45,7 +45,7 @@ export const Published = styled('p', {
   fontWeight: '$regular',
 })
 
-export const Rating = styled('div', {
+export const Ratings = styled('div', {
   display: 'flex',
   gap: '$1',
 })
@@ -72,13 +72,4 @@ export const BookAuthor = styled('p', {
   fontSize: '$sm',
   lineHeight: '$base',
   fontWeight: '$regular',
-})
-
-export const BookDescription = styled('p', {
-  color: '$gray300',
-  fontSize: '$sm',
-  lineHeight: '$base',
-  fontWeight: '$regular',
-
-  marginTop: '$5',
 })

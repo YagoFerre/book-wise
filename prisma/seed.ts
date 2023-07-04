@@ -3,7 +3,8 @@ import { books } from './constants/books'
 import { categories } from './constants/categories'
 import { ratings } from './constants/ratings'
 import { users } from './constants/users'
-export const prisma = new PrismaClient()
+
+export const prisma = new PrismaClient({})
 
 async function main() {
   await prisma.rating.deleteMany()
@@ -73,12 +74,7 @@ async function main() {
     })
   })
 
-  await prisma.$transaction([
-    ...categoriesSeed,
-    ...booksSeed,
-    ...usersSeed,
-    ...ratingsSeed,
-  ])
+  await prisma.$transaction([...categoriesSeed, ...booksSeed, ...usersSeed, ...ratingsSeed])
 }
 
 main()

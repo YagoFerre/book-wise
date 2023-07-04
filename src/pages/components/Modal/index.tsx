@@ -1,5 +1,9 @@
 import { useState } from 'react'
 
+import * as z from 'zod'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+
 import { Check, Star, X } from '@phosphor-icons/react'
 
 import { BookCard } from '@/src/pages/components/BookCard'
@@ -7,6 +11,9 @@ import { UserPhoto } from '@/src/pages/components/UserPhoto'
 import { BookDetail } from '../../explore/components/BookDetail'
 import { CommentCard } from '../../explore/components/CommentCard'
 import { LoginModal } from '../LoginModal'
+
+import { api } from '@/src/lib/axios'
+import { Book } from '@prisma/client'
 
 import eu from '../../../assets/103700322.jpg'
 
@@ -30,11 +37,11 @@ import {
   Username,
 } from './styles'
 
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
-
-import { api } from '@/src/lib/axios'
+interface Props {
+  data: Book
+  width: number
+  height: number
+}
 
 const commentSchema = z.object({
   description: z.string().trim(),
@@ -47,7 +54,7 @@ const commentSchema = z.object({
 
 export type CommentFormData = z.infer<typeof commentSchema>
 
-export function Modal() {
+export function Modal({ data, width, height }: Props) {
   const { register, handleSubmit, watch, setValue } = useForm<CommentFormData>({
     resolver: zodResolver(commentSchema),
     defaultValues: {
@@ -78,7 +85,7 @@ export function Modal() {
   return (
     <Root>
       <Trigger>
-        <BookCard width={108} height={152} />
+        <BookCard data={data} width={width} height={height} />
       </Trigger>
       <Portal>
         <Overlay />
@@ -88,7 +95,7 @@ export function Modal() {
               <X size={24} color="#8D95AF" />
             </Close>
 
-            <BookDetail />
+            <BookDetail book={data} />
 
             <Comments>
               <CommentsHeader>

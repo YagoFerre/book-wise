@@ -1,56 +1,53 @@
 import { Star } from '@phosphor-icons/react'
 import { UserPhoto } from '@/src/pages/components/UserPhoto'
 
-import eu from '../../../../assets/103700322.jpg'
-import bookImage from '../../../../assets/book.png'
+import { Rating } from '@prisma/client'
+import { Description } from '../Description'
 
 import {
   BookAuthor,
   BookCover,
-  BookDescription,
   BookTitle,
   Container,
   Header,
   Main,
   Name,
   Published,
-  Rating,
+  Ratings,
   UserInfoBox,
 } from './styles'
 
-export function ListBook() {
+interface Props {
+  data: Rating
+}
+
+export function ListBook({ data }: Props) {
   return (
     <Container>
       <Header>
         <UserInfoBox>
-          <UserPhoto src={eu} alt="Imagem do usuário" size={40} />
+          <UserPhoto src={data.user.avatar_url} alt="Imagem do usuário" size={40} />
 
           <div>
-            <Name>Yago</Name>
-            <Published>Hoje</Published>
+            <Name>{data.user.name}</Name>
+            <Published>{data.created_at}</Published>
           </div>
         </UserInfoBox>
 
-        <Rating>
-          <Star size={16} color="#8381D9" weight="fill" />
-          <Star size={16} color="#8381D9" weight="fill" />
-          <Star size={16} color="#8381D9" weight="fill" />
-          <Star size={16} color="#8381D9" weight="thin" />
-          <Star size={16} color="#8381D9" weight="thin" />
-        </Rating>
+        <Ratings>
+          {[...Array(5)].map((_, index) => (
+            <Star key={index} size={16} color="#8381D9" weight={index < data.rate! ? 'fill' : 'thin'} />
+          ))}
+        </Ratings>
       </Header>
 
       <Main>
-        <BookCover src={bookImage} alt="Capa do livro" quality={100} width={108} height={152} />
+        <BookCover src={data.book.cover_url} alt="Capa do livro" quality={100} width={108} height={152} />
 
         <div>
-          <BookTitle>O Hobbit</BookTitle>
-          <BookAuthor>J.R.R. Tolkien</BookAuthor>
-          <BookDescription>
-            Semper et sapien proin vitae nisi. Feugiat neque integer donec et aenean posuere amet ultrices. Cras
-            fermentum id pulvinar varius leo a in. Amet libero pharetra nunc elementum fringilla velit ipsum. Sed
-            vulputate massa velit nibh... ver mais
-          </BookDescription>
+          <BookTitle>{data.book.name}</BookTitle>
+          <BookAuthor>{data.book.author}</BookAuthor>
+          <Description text={data.description} />
         </div>
       </Main>
     </Container>

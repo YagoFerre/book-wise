@@ -1,21 +1,21 @@
 import Image from 'next/image'
 
 import { Star } from '@phosphor-icons/react'
-
-import bookImage from '../../../assets/book.png'
+import { BookDTO } from '@/src/dtos/book'
 
 import { BookAuthor, BookTitle, Container, Content, Rating } from './styles'
 
 interface Props {
   width: number
   height: number
+  data: BookDTO
 }
 
-export function BookCard({ width, height }: Props) {
+export function BookCard({ width, height, data }: Props) {
   return (
     <Container>
       <Image
-        src={bookImage}
+        src={data.cover_url}
         alt="Capa do livro"
         quality={100}
         width={width}
@@ -25,16 +25,14 @@ export function BookCard({ width, height }: Props) {
 
       <Content>
         <div>
-          <BookTitle>A revolução dos bichos</BookTitle>
-          <BookAuthor>George Orwell</BookAuthor>
+          <BookTitle>{data.name}</BookTitle>
+          <BookAuthor>{data.author}</BookAuthor>
         </div>
 
         <Rating>
-          <Star size={16} color="#8381D9" weight="fill" />
-          <Star size={16} color="#8381D9" weight="fill" />
-          <Star size={16} color="#8381D9" weight="fill" />
-          <Star size={16} color="#8381D9" weight="thin" />
-          <Star size={16} color="#8381D9" weight="thin" />
+          {[...Array(5)].map((_, index) => (
+            <Star key={index} size={16} color="#8381D9" weight={index < data.rate ? 'fill' : 'thin'} />
+          ))}
         </Rating>
       </Content>
     </Container>
