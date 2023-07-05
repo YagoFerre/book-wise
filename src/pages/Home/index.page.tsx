@@ -11,8 +11,7 @@ import { ListBook } from './components/ListBook'
 import { LatestReading } from './components/LatestReading'
 
 import { prisma } from '@/prisma/seed'
-import { BookDTO } from '@/src/dtos/book'
-import { RatingDTO } from '@/src/dtos/rating'
+import { Book, Rating } from '@/src/dtos'
 
 import {
   BookCardContainer,
@@ -27,7 +26,6 @@ import {
   TrendingBooksContainer,
   TrendingTitleBox,
 } from './styles'
-import { Book, Rating } from '@prisma/client'
 
 interface Props {
   ratings: Rating[]

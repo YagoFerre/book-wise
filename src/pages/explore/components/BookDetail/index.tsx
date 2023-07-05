@@ -1,7 +1,7 @@
 import Image from 'next/image'
 
-import { Book } from '@prisma/client'
 import { BookOpen, BookmarkSimple, Star } from '@phosphor-icons/react'
+import { Book } from '@/src/dtos'
 
 import {
   AboutBox,

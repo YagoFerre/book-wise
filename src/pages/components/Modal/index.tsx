@@ -13,7 +13,7 @@ import { CommentCard } from '../../explore/components/CommentCard'
 import { LoginModal } from '../LoginModal'
 
 import { api } from '@/src/lib/axios'
-import { Book } from '@prisma/client'
+import { Book } from '@/src/dtos'
 
 import eu from '../../../assets/103700322.jpg'
 

@@ -1,14 +1,14 @@
 import Image from 'next/image'
 
 import { Star } from '@phosphor-icons/react'
-import { BookDTO } from '@/src/dtos/book'
+import { Book } from '@/src/dtos'
 
 import { BookAuthor, BookTitle, Container, Content, Rating } from './styles'
 
 interface Props {
   width: number
   height: number
-  data: BookDTO
+  data: Book
 }
 
 export function BookCard({ width, height, data }: Props) {

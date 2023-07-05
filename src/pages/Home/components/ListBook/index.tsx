@@ -1,8 +1,8 @@
 import { Star } from '@phosphor-icons/react'
 import { UserPhoto } from '@/src/pages/components/UserPhoto'
 
-import { Rating } from '@prisma/client'
 import { Description } from '../Description'
+import { Rating } from '@/src/dtos'
 
 import {
   BookAuthor,
@@ -26,7 +26,7 @@ export function ListBook({ data }: Props) {
     <Container>
       <Header>
         <UserInfoBox>
-          <UserPhoto src={data.user.avatar_url} alt="Imagem do usuário" size={40} />
+          <UserPhoto src={data.user.avatar_url!} alt="Imagem do usuário" size={40} />
 
           <div>
             <Name>{data.user.name}</Name>
@@ -36,7 +36,7 @@ export function ListBook({ data }: Props) {
 
         <Ratings>
           {[...Array(5)].map((_, index) => (
-            <Star key={index} size={16} color="#8381D9" weight={index < data.rate! ? 'fill' : 'thin'} />
+            <Star key={index} size={16} color="#8381D9" weight={index < data.rate ? 'fill' : 'thin'} />
           ))}
         </Ratings>
       </Header>

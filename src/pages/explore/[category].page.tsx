@@ -10,10 +10,9 @@ import { Tag } from './components/Tag'
 import { Modal } from '../components/Modal'
 
 import { prisma } from '@/prisma/seed'
-import { BookDTO } from '@/src/dtos/book'
+import { Category, Book } from '@/src/dtos'
 
 import { BooksContainer, Categories, Container, Content, InputBox, PageHeading } from './styles'
-import { Book, Category } from '@prisma/client'
 
 interface Props {
   categories: Category[]
@@ -109,7 +108,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   const categories = await prisma.category.findMany({}).then((response) => JSON.parse(JSON.stringify(response)))
   const selectedTag = String(params?.category) || ''
 
-  const booksResponse: BookDTO[] = await prisma.book
+  const booksResponse: Book[] = await prisma.book
     .findMany({
       include: {
         ratings: true,
@@ -122,7 +121,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     })
     .then((response) => JSON.parse(JSON.stringify(response)))
 
-  const booksByCategoryResponse: BookDTO[] = await prisma.book
+  const booksByCategoryResponse: Book[] = await prisma.book
     .findMany({
       include: {
         ratings: true,
@@ -155,7 +154,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     })
     .then((response) => JSON.parse(JSON.stringify(response)))
 
-  function addRateToBook(books: BookDTO[], booksWithRatings: BookWithRating[]) {
+  function addRateToBook(books: Book[], booksWithRatings: BookWithRating[]) {
     return books.map((book) => {
       const ratingBook = booksWithRatings.find((rating) => rating.book_id === book.id)
 
