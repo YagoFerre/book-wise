@@ -1,12 +1,12 @@
 import { useState } from 'react'
 
+import * as Dialog from '@radix-ui/react-dialog'
 import * as z from 'zod'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
 import { Check, Star, X } from '@phosphor-icons/react'
 
-import { BookCard } from '@/src/pages/components/BookCard'
 import { UserPhoto } from '@/src/pages/components/UserPhoto'
 import { BookDetail } from '../../explore/components/BookDetail'
 import { CommentCard } from '../../explore/components/CommentCard'
@@ -33,14 +33,13 @@ import {
   Root,
   TextInput,
   Title,
-  Trigger,
   Username,
 } from './styles'
 
-interface Props {
+interface Props extends Dialog.DialogProps {
   data: Book
-  width: number
-  height: number
+  width?: number
+  height?: number
 }
 
 const commentSchema = z.object({
@@ -54,7 +53,7 @@ const commentSchema = z.object({
 
 export type CommentFormData = z.infer<typeof commentSchema>
 
-export function Modal({ data, width, height }: Props) {
+export function Modal({ data, width, height, ...rest }: Props) {
   const { register, handleSubmit, watch, setValue } = useForm<CommentFormData>({
     resolver: zodResolver(commentSchema),
     defaultValues: {
@@ -83,10 +82,7 @@ export function Modal({ data, width, height }: Props) {
   }
 
   return (
-    <Root>
-      <Trigger>
-        <BookCard data={data} width={width} height={height} />
-      </Trigger>
+    <Root {...rest}>
       <Portal>
         <Overlay />
         <Content>
@@ -136,9 +132,9 @@ export function Modal({ data, width, height }: Props) {
                 </CommentBox>
               )}
 
-              <CommentCard />
-              <CommentCard />
-              <CommentCard />
+              {data.ratings?.map((comment) => (
+                <CommentCard key={comment.id} comment={comment} />
+              ))}
             </Comments>
           </Container>
         </Content>

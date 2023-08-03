@@ -1,7 +1,10 @@
+import { useState } from 'react'
+
 import Image from 'next/image'
 
 import { Star } from '@phosphor-icons/react'
 import { Book } from '@/src/dtos'
+import { Modal } from '../Modal'
 
 import { BookAuthor, BookTitle, Container, Content, Rating } from './styles'
 
@@ -12,8 +15,10 @@ interface Props {
 }
 
 export function BookCard({ width, height, data }: Props) {
+  const [open, setOpen] = useState(false)
+
   return (
-    <Container>
+    <Container onClick={() => setOpen(!open)}>
       <Image
         src={data.cover_url}
         alt="Capa do livro"
@@ -23,15 +28,17 @@ export function BookCard({ width, height, data }: Props) {
         style={{ borderRadius: '4px' }}
       />
 
+      <Modal data={data} open={open} onOpenChange={setOpen} width={98} height={134} />
+
       <Content>
         <div>
-          <BookTitle>{data.name}</BookTitle>
+          <BookTitle>{`${data.name.slice(0, 23)}...`}</BookTitle>
           <BookAuthor>{data.author}</BookAuthor>
         </div>
 
         <Rating>
           {[...Array(5)].map((_, index) => (
-            <Star key={index} size={16} color="#8381D9" weight={index < data.rate ? 'fill' : 'thin'} />
+            <Star key={index} size={16} color="#8381D9" weight={index < data.ratings[0]?.rate ? 'fill' : 'thin'} />
           ))}
         </Rating>
       </Content>

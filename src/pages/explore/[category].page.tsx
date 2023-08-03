@@ -1,13 +1,13 @@
 import { useState } from 'react'
-import { GetStaticPaths, GetStaticProps } from 'next'
+import { GetServerSideProps } from 'next'
 import { useRouter } from 'next/router'
 
 import { Binoculars } from '@phosphor-icons/react'
 
+import { BookCard } from '../components/BookCard'
 import { SideBar } from '../components/SideBar'
 import { Input } from '../components/Input'
 import { Tag } from './components/Tag'
-import { Modal } from '../components/Modal'
 
 import { prisma } from '@/prisma/seed'
 import { Category, Book } from '@/src/dtos'
@@ -20,17 +20,11 @@ interface Props {
   booksByCategory: Book[]
 }
 
-interface BookWithRating {
-  book_id: string
-  _avg: {
-    rate: number
-  }
-}
-
 export default function Explore({ categories, books, booksByCategory }: Props) {
-  const [selectedTag, setSelectedTag] = useState('Tudo')
+  const [selectedTag, setSelectedTag] = useState('tudo')
+  const [querySearch, setQuerySearch] = useState('')
 
-  const { push, query, replace } = useRouter()
+  const { push, query } = useRouter()
 
   function handleSelectTag(name: string) {
     setSelectedTag(name)
@@ -38,9 +32,24 @@ export default function Explore({ categories, books, booksByCategory }: Props) {
   }
 
   function handleSelectAll() {
-    setSelectedTag('Tudo')
-    replace('/explore/tudo')
+    setSelectedTag('tudo')
+    push('tudo')
   }
+
+  const filteredBooks =
+    selectedTag === 'tudo'
+      ? books?.filter((book) => {
+          return (
+            book.name.toLowerCase().includes(querySearch.toLowerCase()) ||
+            book.author.toLowerCase().includes(querySearch.toLowerCase())
+          )
+        })
+      : booksByCategory?.filter((book) => {
+          return (
+            book.name.toLowerCase().includes(querySearch.toLowerCase()) ||
+            book.author.toLowerCase().includes(querySearch.toLowerCase())
+          )
+        })
 
   return (
     <Container>
@@ -54,7 +63,7 @@ export default function Explore({ categories, books, booksByCategory }: Props) {
           </div>
 
           <InputBox>
-            <Input placeholder="Buscar livro ou autor" />
+            <Input placeholder="Buscar livro ou autor" onChange={(e) => setQuerySearch(e.target.value)} />
           </InputBox>
         </PageHeading>
 
@@ -69,49 +78,35 @@ export default function Explore({ categories, books, booksByCategory }: Props) {
             />
           ))}
         </Categories>
+
         <BooksContainer>
-          {selectedTag === 'Tudo'
-            ? books?.map((book) => <Modal key={book.id} data={book} width={108} height={152} />)
-            : booksByCategory?.map((book) => <Modal key={book.id} data={book} width={108} height={152} />)}
+          {filteredBooks?.map((book) => (
+            <BookCard key={book.id} data={book} width={108} height={152} />
+          ))}
         </BooksContainer>
       </Content>
     </Container>
   )
 }
 
-export const getStaticPaths: GetStaticPaths = async () => {
-  const categories = await prisma.category.findMany({
-    select: {
-      name: true,
-    },
-  })
-
-  const category = categories.map((category) => {
-    return category.name.toLowerCase()
-  })
-
-  const paths = category.map((category) => {
-    return {
-      params: {
-        category,
-      },
-    }
-  })
-
-  return {
-    paths,
-    fallback: true,
-  }
-}
-
-export const getStaticProps: GetStaticProps = async ({ params }) => {
-  const categories = await prisma.category.findMany({}).then((response) => JSON.parse(JSON.stringify(response)))
+export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+  const categories = await prisma.category.findMany()
   const selectedTag = String(params?.category) || ''
 
-  const booksResponse: Book[] = await prisma.book
+  const books = await prisma.book
     .findMany({
       include: {
-        ratings: true,
+        ratings: {
+          where: {
+            rate: {
+              gte: 4,
+            },
+          },
+          include: {
+            book: true,
+            user: true,
+          },
+        },
         categories: {
           include: {
             category: true,
@@ -121,16 +116,8 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     })
     .then((response) => JSON.parse(JSON.stringify(response)))
 
-  const booksByCategoryResponse: Book[] = await prisma.book
+  const booksByCategory = await prisma.book
     .findMany({
-      include: {
-        ratings: true,
-        categories: {
-          include: {
-            category: true,
-          },
-        },
-      },
       where: {
         categories: {
           some: {
@@ -142,34 +129,26 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
           },
         },
       },
-    })
-    .then((response) => JSON.parse(JSON.stringify(response)))
-
-  const booksWithRatings: BookWithRating[] = await prisma.rating
-    .groupBy({
-      by: ['book_id'],
-      _avg: {
-        rate: true,
+      include: {
+        ratings: {
+          where: {
+            rate: {
+              gte: 4,
+            },
+          },
+          include: {
+            book: true,
+            user: true,
+          },
+        },
+        categories: {
+          include: {
+            category: true,
+          },
+        },
       },
     })
     .then((response) => JSON.parse(JSON.stringify(response)))
-
-  function addRateToBook(books: Book[], booksWithRatings: BookWithRating[]) {
-    return books.map((book) => {
-      const ratingBook = booksWithRatings.find((rating) => rating.book_id === book.id)
-
-      return {
-        ...book,
-        rate: ratingBook?._avg.rate,
-      }
-    })
-  }
-
-  const booksByCategoryFormatted = addRateToBook(booksByCategoryResponse, booksWithRatings)
-  const booksFormatted = addRateToBook(booksResponse, booksWithRatings)
-
-  const books = JSON.parse(JSON.stringify(booksFormatted))
-  const booksByCategory = JSON.parse(JSON.stringify(booksByCategoryFormatted))
 
   return {
     props: {

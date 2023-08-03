@@ -1,7 +1,11 @@
-import { LinkProps } from 'next/link'
+import { useState } from 'react'
 
+import { Rating as RatingDTO } from '@/src/dtos'
 import { Star } from '@phosphor-icons/react'
-import bookImage from '../../../../assets/book.png'
+import { Modal } from '@/src/pages/components/Modal'
+
+import { formatDistanceToNow } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 
 import {
   BookAuthor,
@@ -16,58 +20,44 @@ import {
   Text,
 } from './styles'
 
-interface Props extends LinkProps {
-  bookTitle: string
-  author: string
-  latestData: string
+interface Props {
+  data: RatingDTO
 }
 
-export function BookCardProfile({
-  bookTitle,
-  author,
-  latestData,
-  ...rest
-}: Props) {
+export function BookCardProfile({ data }: Props) {
+  const [open, setOpen] = useState(false)
+
   return (
     <Container>
-      <Text>{latestData}</Text>
+      <Text>{formatDistanceToNow(new Date(data.created_at), { addSuffix: true, locale: ptBR })}</Text>
 
       <Content>
         <Box>
           <BookCover
-            src={bookImage}
+            src={data.book.cover_url}
             alt="Capa do livro"
             quality={100}
             width={98}
             height={134}
-            onClick={() => {}}
+            onClick={() => setOpen(!open)}
           />
+
+          <Modal data={data.book} open={open} onOpenChange={setOpen} />
 
           <BookDetails>
             <div>
-              <BookTitle>{bookTitle}</BookTitle>
-              <BookAuthor>{author}</BookAuthor>
+              <BookTitle>{data.book.name}</BookTitle>
+              <BookAuthor>{data.book.author}</BookAuthor>
             </div>
 
             <Rating>
-              <Star size={16} color="#8381D9" weight="fill" />
-              <Star size={16} color="#8381D9" weight="fill" />
-              <Star size={16} color="#8381D9" weight="fill" />
-              <Star size={16} color="#8381D9" weight="thin" />
-              <Star size={16} color="#8381D9" weight="thin" />
+              {[...Array(5)].map((_, index) => (
+                <Star key={index} size={16} color="#8381D9" weight={index < data.rate ? 'fill' : 'thin'} />
+              ))}
             </Rating>
           </BookDetails>
         </Box>
-        <BookDescription>
-          Tristique massa sed enim lacinia odio. Congue ut faucibus nunc vitae
-          non. Nam feugiat vel morbi viverra vitae mi. Vitae fringilla ut et
-          suspendisse enim suspendisse vitae. Leo non eget lacus sollicitudin
-          tristique pretium quam. Mollis et luctus amet sed convallis varius
-          massa sagittis. Proin sed proin at leo quis ac sem. Nam donec accumsan
-          curabitur amet tortor quam sit. Bibendum enim sit dui lorem urna amet
-          elit rhoncus ut. Aliquet euismod vitae ut turpis. Aliquam amet integer
-          pellentesque.
-        </BookDescription>
+        <BookDescription>{data.description}</BookDescription>
       </Content>
     </Container>
   )

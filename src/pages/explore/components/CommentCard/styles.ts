@@ -41,7 +41,7 @@ export const Latest = styled('p', {
   lineHeight: '$base',
 })
 
-export const Rating = styled('div', {
+export const Ratings = styled('div', {
   display: 'flex',
   gap: '$1',
 })

@@ -21,7 +21,6 @@ interface Props {
 }
 
 export function BookDetail({ book }: Props) {
-  console.log(book)
   return (
     <Container>
       <BookContainer>
@@ -43,10 +42,10 @@ export function BookDetail({ book }: Props) {
           <RatingContainer>
             <Rating>
               {[...Array(5)].map((_, index) => (
-                <Star key={index} size={20} color="#8381D9" weight={index < book.rate ? 'fill' : 'thin'} />
+                <Star key={index} size={20} color="#8381D9" weight={index < book.ratings[0].rate ? 'fill' : 'thin'} />
               ))}
             </Rating>
-            <span>{book.ratings.length} avaliações</span>
+            <span>{book.ratings?.length} avaliações</span>
           </RatingContainer>
         </BookContent>
       </BookContainer>
@@ -57,7 +56,7 @@ export function BookDetail({ book }: Props) {
           <Box>
             <p>Categoria</p>
             <span>
-              {book.categories[0].category.name}, {book.categories[1].category.name}
+              {book?.categories[0]?.category?.name}, {book?.categories[1]?.category?.name}
             </span>
           </Box>
         </AboutBox>

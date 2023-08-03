@@ -1,12 +1,9 @@
-import { GetStaticProps } from 'next'
-
-import { formatDistance } from 'date-fns'
-import { ptBR } from 'date-fns/locale'
+import { GetServerSideProps } from 'next'
 
 import { CaretRight, ChartLineUp } from '@phosphor-icons/react'
 
-import { Modal } from '../components/Modal'
 import { SideBar } from '../components/SideBar'
+import { BookCard } from '../components/BookCard'
 import { ListBook } from './components/ListBook'
 import { LatestReading } from './components/LatestReading'
 
@@ -30,13 +27,6 @@ import {
 interface Props {
   ratings: Rating[]
   popularBooks: Book[]
-}
-
-interface BookWithRating {
-  book_id: string
-  _avg: {
-    rate: number
-  }
 }
 
 export default function Home({ ratings, popularBooks }: Props) {
@@ -74,7 +64,7 @@ export default function Home({ ratings, popularBooks }: Props) {
 
           <BookCardContainer>
             {popularBooks?.map((book) => (
-              <Modal key={book.id} data={book} width={64} height={94} />
+              <BookCard key={book.id} data={book} width={64} height={94} />
             ))}
           </BookCardContainer>
         </TrendingBooksContainer>
@@ -83,36 +73,60 @@ export default function Home({ ratings, popularBooks }: Props) {
   )
 }
 
-export const getStaticProps: GetStaticProps = async () => {
-  const responseRatings = await prisma.rating
+export const getServerSideProps: GetServerSideProps = async () => {
+  const ratings = await prisma.rating
     .findMany({
+      include: {
+        user: true,
+        book: {
+          include: {
+            categories: {
+              include: {
+                category: true,
+              },
+            },
+            ratings: {
+              include: {
+                user: true,
+              },
+              where: {
+                rate: {
+                  gte: 4,
+                },
+              },
+            },
+          },
+        },
+      },
       orderBy: {
         created_at: 'desc',
       },
-      include: {
-        book: true,
-        user: true,
-      },
     })
-    .then((response) => JSON.stringify(response))
-  const ratingsData = await JSON.parse(responseRatings)
+    .then((response) => JSON.parse(JSON.stringify(response)))
 
-  const ratings = ratingsData.map((rating: Rating) => {
-    return {
-      ...rating,
-      created_at: formatDistance(new Date(rating.created_at), Date.now(), { addSuffix: true, locale: ptBR }),
-    }
-  })
-
-  const responsePopularBooks: Book[] = await prisma.book
+  const popularBooks = await prisma.book
     .findMany({
+      where: {
+        ratings: {
+          some: {
+            rate: {
+              gte: 4,
+            },
+          },
+        },
+      },
       orderBy: {
         ratings: {
           _count: 'desc',
         },
       },
       include: {
-        ratings: true,
+        ratings: {
+          include: {
+            book: true,
+            user: true,
+          },
+        },
         categories: {
           include: {
             category: true,
@@ -122,32 +136,6 @@ export const getStaticProps: GetStaticProps = async () => {
       take: 4,
     })
     .then((response) => JSON.parse(JSON.stringify(response)))
-
-  const booksWithRating: BookWithRating[] = await prisma.rating
-    .groupBy({
-      by: ['book_id'],
-      where: {
-        book_id: {
-          in: responsePopularBooks.map((book) => book.id),
-        },
-      },
-      _avg: {
-        rate: true,
-      },
-    })
-    .then((response) => JSON.parse(JSON.stringify(response)))
-
-  const popularBooksData = responsePopularBooks.map((book) => {
-    const bookWithRating = booksWithRating.find((rating) => rating.book_id === book.id)
-
-    return {
-      ...book,
-      name: `${book.name.slice(0, 34)}...`,
-      rate: bookWithRating?._avg.rate,
-    }
-  })
-
-  const popularBooks = await JSON.parse(JSON.stringify(popularBooksData))
 
   return {
     props: {

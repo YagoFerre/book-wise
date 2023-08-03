@@ -1,8 +1,14 @@
+import { useState } from 'react'
 import { Star } from '@phosphor-icons/react'
+
 import { UserPhoto } from '@/src/pages/components/UserPhoto'
+import { Modal } from '@/src/pages/components/Modal'
 
 import { Description } from '../Description'
 import { Rating } from '@/src/dtos'
+
+import { formatDistanceToNow } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 
 import {
   BookAuthor,
@@ -22,6 +28,8 @@ interface Props {
 }
 
 export function ListBook({ data }: Props) {
+  const [open, setOpen] = useState(false)
+
   return (
     <Container>
       <Header>
@@ -30,7 +38,7 @@ export function ListBook({ data }: Props) {
 
           <div>
             <Name>{data.user.name}</Name>
-            <Published>{data.created_at}</Published>
+            <Published>{formatDistanceToNow(new Date(data.created_at), { addSuffix: true, locale: ptBR })}</Published>
           </div>
         </UserInfoBox>
 
@@ -42,7 +50,15 @@ export function ListBook({ data }: Props) {
       </Header>
 
       <Main>
-        <BookCover src={data.book.cover_url} alt="Capa do livro" quality={100} width={108} height={152} />
+        <BookCover
+          src={data.book.cover_url}
+          alt="Capa do livro"
+          quality={100}
+          width={108}
+          height={152}
+          onClick={() => setOpen(!open)}
+        />
+        <Modal data={data.book} open={open} onOpenChange={setOpen} />
 
         <div>
           <BookTitle>{data.book.name}</BookTitle>

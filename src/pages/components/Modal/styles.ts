@@ -4,10 +4,6 @@ import * as Dialog from '@radix-ui/react-dialog'
 
 export const Root = styled(Dialog.Root, {})
 
-export const Trigger = styled(Dialog.Trigger, {
-  background: 'transparent',
-})
-
 export const Portal = styled(Dialog.Portal, {})
 
 export const Overlay = styled(Dialog.Overlay, {

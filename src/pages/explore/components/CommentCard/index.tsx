@@ -1,46 +1,44 @@
 import Link from 'next/link'
 
+import { formatDistance } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
+
 import { Star } from '@phosphor-icons/react'
 import { UserPhoto } from '@/src/pages/components/UserPhoto'
+import { Rating } from '@/src/dtos'
 
-import eu from '../../../../assets/103700322.jpg'
+import { CommentDescription, CommentHeader, Container, Latest, Ratings, UserInfoBox, UserName } from './styles'
 
-import {
-  CommentDescription,
-  CommentHeader,
-  Container,
-  Latest,
-  Rating,
-  UserInfoBox,
-  UserName,
-} from './styles'
+interface Props {
+  comment: Rating
+}
 
-export function CommentCard() {
+export function CommentCard({ comment }: Props) {
   return (
     <Container>
       <CommentHeader>
         <Link href="">
-          <UserPhoto src={eu} size={40} alt="Foto do usuário" />
+          <UserPhoto src={comment.user.avatar_url!} size={40} alt="Foto do usuário" />
         </Link>
 
         <UserInfoBox>
-          <UserName>Yago Ferreira</UserName>
-          <Latest>Há 2 dias</Latest>
+          <UserName>{comment.user.name}</UserName>
+          <Latest>{formatDistance(new Date(comment.created_at), Date.now(), { addSuffix: true, locale: ptBR })}</Latest>
         </UserInfoBox>
 
-        <Rating>
-          <Star size={16} color="#8381D9" weight="fill" />
-          <Star size={16} color="#8381D9" weight="fill" />
-          <Star size={16} color="#8381D9" weight="fill" />
-          <Star size={16} color="#8381D9" weight="thin" />
-          <Star size={16} color="#8381D9" weight="thin" />
-        </Rating>
+        <Ratings>
+          {[...Array(5)].map((_, index) => (
+            <Star
+              key={index}
+              size={16}
+              color="#8381D9"
+              weight={index < comment.rate ? 'fill' : 'thin'}
+              cursor="pointer"
+            />
+          ))}
+        </Ratings>
       </CommentHeader>
-      <CommentDescription>
-        Nec tempor nunc in egestas. Euismod nisi eleifend at et in sagittis.
-        Penatibus id vestibulum imperdiet a at imperdiet lectus leo. Sit porta
-        eget nec vitae sit vulputate eget
-      </CommentDescription>
+      <CommentDescription>{comment.description}</CommentDescription>
     </Container>
   )
 }
