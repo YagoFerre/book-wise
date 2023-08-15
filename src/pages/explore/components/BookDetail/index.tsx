@@ -42,7 +42,7 @@ export function BookDetail({ book }: Props) {
           <RatingContainer>
             <Rating>
               {[...Array(5)].map((_, index) => (
-                <Star key={index} size={20} color="#8381D9" weight={index < book.ratings[0].rate ? 'fill' : 'thin'} />
+                <Star key={index} size={20} color="#8381D9" weight={index < book.rate ? 'fill' : 'thin'} />
               ))}
             </Rating>
             <span>{book.ratings?.length} avaliações</span>

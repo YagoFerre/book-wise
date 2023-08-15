@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { useRouter } from 'next/router'
+
 import { Star } from '@phosphor-icons/react'
 
 import { UserPhoto } from '@/src/pages/components/UserPhoto'
@@ -30,11 +32,18 @@ interface Props {
 export function ListBook({ data }: Props) {
   const [open, setOpen] = useState(false)
 
+  const { push } = useRouter()
+
   return (
     <Container>
       <Header>
         <UserInfoBox>
-          <UserPhoto src={data.user.avatar_url!} alt="Imagem do usuário" size={40} />
+          <UserPhoto
+            src={data.user.avatar_url!}
+            onClick={async () => await push(`/profile/${data.user_id}`)}
+            alt="Imagem do usuário"
+            size={40}
+          />
 
           <div>
             <Name>{data.user.name}</Name>

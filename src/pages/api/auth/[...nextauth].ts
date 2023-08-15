@@ -15,7 +15,7 @@ export function buildNextAuthOptions(req: NextApiRequest, res: NextApiResponse):
         clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
         authorization: {
           params: {
-            scope: 'https://www.googleapis.com/auth/userinfo.profile',
+            scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
           },
         },
         profile(profile: GoogleProfile) {
@@ -48,10 +48,6 @@ export function buildNextAuthOptions(req: NextApiRequest, res: NextApiResponse):
     ],
 
     callbacks: {
-      async signIn() {
-        return true
-      },
-
       async session({ session, user }) {
         return {
           ...session,

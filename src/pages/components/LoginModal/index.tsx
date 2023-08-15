@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { signIn } from 'next-auth/react'
 import * as Dialog from '@radix-ui/react-dialog'
 
 import { X } from '@phosphor-icons/react'
@@ -25,8 +26,12 @@ interface Props extends Dialog.DialogProps {
 }
 
 export function LoginModal({ onComment, ...rest }: Props) {
+  async function handleSignIn(provider: string) {
+    await signIn(provider)
+  }
+
   return (
-    <Root>
+    <Root {...rest}>
       <Trigger>
         <FeedbackButton onClick={onComment}>Avaliar</FeedbackButton>
       </Trigger>
@@ -40,24 +45,12 @@ export function LoginModal({ onComment, ...rest }: Props) {
             <ModalTitle>Faça login para deixar sua avaliação</ModalTitle>
 
             <ButtonContainer>
-              <Button>
-                <Image
-                  src={googleSvg}
-                  alt="Google SVG"
-                  width={32}
-                  height={32}
-                  quality={100}
-                />
+              <Button onClick={() => handleSignIn('google')}>
+                <Image src={googleSvg} alt="Google SVG" width={32} height={32} quality={100} />
                 Entrar com Google
               </Button>
-              <Button>
-                <Image
-                  src={gitHubSvg}
-                  alt="GitHub SVG"
-                  width={32}
-                  height={32}
-                  quality={100}
-                />
+              <Button onClick={() => handleSignIn('github')}>
+                <Image src={gitHubSvg} alt="GitHub SVG" width={32} height={32} quality={100} />
                 Entrar com GitHub
               </Button>
             </ButtonContainer>

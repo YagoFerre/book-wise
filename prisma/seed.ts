@@ -4,13 +4,7 @@ import { categories } from './constants/categories'
 import { ratings } from './constants/ratings'
 import { users } from './constants/users'
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
-}
-
-export const prisma = globalForPrisma.prisma ?? new PrismaClient()
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+const prisma = new PrismaClient()
 
 async function main() {
   await prisma.rating.deleteMany()
@@ -24,6 +18,7 @@ async function main() {
       data: {
         id: user.id,
         name: user.name,
+        email: user.email,
         avatar_url: user.avatar_url,
       },
     })

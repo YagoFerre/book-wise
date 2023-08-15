@@ -12,7 +12,6 @@ export const Container = styled('div', {
   gap: '$5',
 
   transition: '0.7s',
-  cursor: 'pointer',
 
   '&:hover': {
     background: '$gray600',

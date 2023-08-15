@@ -9,18 +9,20 @@ import { SideBar } from '../components/SideBar'
 import { Input } from '../components/Input'
 import { Tag } from './components/Tag'
 
-import { prisma } from '@/prisma/seed'
-import { Category, Book } from '@/src/dtos'
+import { prisma } from '@/src/lib/prisma'
+import { Category, Book, AverageRating } from '@/src/dtos'
 
 import { BooksContainer, Categories, Container, Content, InputBox, PageHeading } from './styles'
+import { api } from '@/src/lib/axios'
 
 interface Props {
   categories: Category[]
   books: Book[]
   booksByCategory: Book[]
+  isRead: boolean
 }
 
-export default function Explore({ categories, books, booksByCategory }: Props) {
+export default function Explore({ categories, books, booksByCategory, isRead }: Props) {
   const [selectedTag, setSelectedTag] = useState('tudo')
   const [querySearch, setQuerySearch] = useState('')
 
@@ -80,8 +82,8 @@ export default function Explore({ categories, books, booksByCategory }: Props) {
         </Categories>
 
         <BooksContainer>
-          {filteredBooks?.map((book) => (
-            <BookCard key={book.id} data={book} width={108} height={152} />
+          {filteredBooks.map((book) => (
+            <BookCard key={book.id} data={book} isRead={isRead} width={108} height={152} />
           ))}
         </BooksContainer>
       </Content>
@@ -97,10 +99,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     .findMany({
       include: {
         ratings: {
-          where: {
-            rate: {
-              gte: 4,
-            },
+          orderBy: {
+            created_at: 'desc',
           },
           include: {
             book: true,
@@ -116,7 +116,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     })
     .then((response) => JSON.parse(JSON.stringify(response)))
 
-  const booksByCategory = await prisma.book
+  const booksByCategoryData = await prisma.book
     .findMany({
       where: {
         categories: {
@@ -131,10 +131,8 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       },
       include: {
         ratings: {
-          where: {
-            rate: {
-              gte: 4,
-            },
+          orderBy: {
+            created_at: 'desc',
           },
           include: {
             book: true,
@@ -150,11 +148,34 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     })
     .then((response) => JSON.parse(JSON.stringify(response)))
 
+  const averageRatings = await prisma.rating
+    .groupBy({
+      by: ['book_id'],
+      _avg: {
+        rate: true,
+      },
+    })
+    .then((response) => JSON.parse(JSON.stringify(response)))
+
+  const booksByCategory = booksByCategoryData.map((book: Book) => {
+    const averageRating = averageRatings.find((rating: AverageRating) => rating.book_id === book.id)
+
+    return {
+      ...book,
+      rate: averageRating?._avg.rate,
+    }
+  })
+
+  const { data } = await api.get('/user/read-books')
+  const isRead = data
+  // console.log(isRead)
+
   return {
     props: {
       categories,
       books,
       booksByCategory,
+      isRead,
     },
   }
 }

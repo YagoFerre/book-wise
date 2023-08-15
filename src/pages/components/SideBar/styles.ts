@@ -74,7 +74,7 @@ export const Login = styled(Link, {
   lineHeight: '$base',
 })
 
-export const LogOut = styled(Link, {
+export const LogOut = styled('div', {
   width: '8rem',
 
   display: 'flex',
@@ -88,4 +88,8 @@ export const LogOut = styled(Link, {
   fontSize: '$sm',
   fontWeight: '$regular',
   lineHeight: '$base',
+
+  svg: {
+    cursor: 'pointer',
+  },
 })

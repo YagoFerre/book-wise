@@ -1,6 +1,6 @@
 import { CaretRight, Star } from '@phosphor-icons/react'
-
-import bookImage from '../../../../assets/book.png'
+import { formatDistanceToNow } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 
 import {
   BookAuthor,
@@ -16,51 +16,62 @@ import {
   SeeAll,
   SubtitleBox,
 } from './styles'
+import { Rating as RatingDTO } from '@/src/dtos'
+import { Description } from '../Description'
+import { useRouter } from 'next/router'
+import { useState } from 'react'
+import { Modal } from '@/src/pages/components/Modal'
 
-export function LatestReading() {
+interface Props {
+  data: RatingDTO
+}
+
+export function LatestReading({ data }: Props) {
+  const [open, setOpen] = useState(false)
+
+  const { push } = useRouter()
+
   return (
     <Container>
       <SubtitleBox>
         <p>Sua última leitura</p>
 
-        <SeeAll>
+        <SeeAll onClick={async () => await push(`/profile/${data?.id}`)}>
           Ver todas <CaretRight size={16} color="#8381D9" />
         </SeeAll>
       </SubtitleBox>
 
       <LatestBook>
         <BookCover
-          src={bookImage}
+          src={data.book.cover_url}
+          onClick={() => setOpen(!open)}
           alt="Capa do livro"
           quality={100}
           width={108}
           height={152}
         />
 
+        <Modal data={data.book} open={open} onOpenChange={setOpen} />
+
         <Content>
           <Head>
-            <p>Há 2 dias</p>
+            <p>{formatDistanceToNow(new Date(data.created_at), { addSuffix: true, locale: ptBR })}</p>
 
             <Rating>
-              <Star size={16} color="#8381D9" weight="fill" />
-              <Star size={16} color="#8381D9" weight="fill" />
-              <Star size={16} color="#8381D9" weight="fill" />
-              <Star size={16} color="#8381D9" weight="thin" />
-              <Star size={16} color="#8381D9" weight="thin" />
+              {[...Array(5)].map((_, index) => (
+                <Star key={index} size={16} color="#8381D9" weight={index < data.rate ? 'fill' : 'thin'} />
+              ))}
             </Rating>
           </Head>
 
           <Main>
             <div>
-              <BookTitle>Entendendo Algoritmos</BookTitle>
-              <BookAuthor>Aditya Bhargava</BookAuthor>
+              <BookTitle>{data.book.name}</BookTitle>
+              <BookAuthor>{data.book.author}</BookAuthor>
             </div>
 
-            <BookDescription>
-              Nec tempor nunc in egestas. Euismod nisi eleifend at et in
-              sagittis. Penatibus id vestibulum imperdiet a at imperdiet
-              lectu...
-            </BookDescription>
+            <Description text={data.description} />
+            {/* <BookDescription>{data.ratings[0].description}</BookDescription> */}
           </Main>
         </Content>
       </LatestBook>

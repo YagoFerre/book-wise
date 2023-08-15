@@ -1,9 +1,9 @@
 import Image from 'next/image'
 
-import imageLogIn from '../../assets/image.png'
-import googleSvg from '../../assets/google.svg'
-import gitHubSvg from '../../assets/github.svg'
-import rocketSvg from '../../assets/rocket.svg'
+import imageLogIn from '../assets/image.png'
+import googleSvg from '../assets/google.svg'
+import gitHubSvg from '../assets/github.svg'
+import rocketSvg from '../assets/rocket.svg'
 
 import { Button, ButtonContainer, ButtonTitle, Container, LogInBox, Subtitle, Title } from './styles'
 import { signIn } from 'next-auth/react'
@@ -13,7 +13,7 @@ export default function Login() {
   const { push } = useRouter()
 
   async function handleSignIn(provider: string) {
-    await signIn(provider)
+    await signIn(provider, { callbackUrl: '/Home' })
   }
 
   return (

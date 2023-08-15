@@ -1,5 +1,5 @@
 import { Adapter } from 'next-auth/adapters'
-import { prisma } from '@/prisma/seed'
+import { prisma } from '../prisma'
 import { NextApiRequest, NextApiResponse } from 'next'
 
 export function PrismaAdapter(req: NextApiRequest, res: NextApiResponse): Adapter {
@@ -16,8 +16,8 @@ export function PrismaAdapter(req: NextApiRequest, res: NextApiResponse): Adapte
       return {
         id: createdUser.id,
         name: createdUser.name,
+        email: user.email!,
         avatar_url: createdUser.avatar_url!,
-        email: user.email,
         emailVerified: null,
       }
     },
@@ -93,7 +93,7 @@ export function PrismaAdapter(req: NextApiRequest, res: NextApiResponse): Adapte
     async updateUser(user) {
       const prismaUser = await prisma.user.update({
         where: {
-          id: user.id!,
+          id: user.id,
         },
         data: {
           name: user.name,
@@ -132,15 +132,15 @@ export function PrismaAdapter(req: NextApiRequest, res: NextApiResponse): Adapte
     async createSession({ sessionToken, userId, expires }) {
       await prisma.session.create({
         data: {
+          session_token: sessionToken,
           user_id: userId,
           expires,
-          session_token: sessionToken,
         },
       })
 
       return {
-        userId,
         sessionToken,
+        userId,
         expires,
       }
     },
@@ -189,9 +189,9 @@ export function PrismaAdapter(req: NextApiRequest, res: NextApiResponse): Adapte
       })
 
       return {
+        sessionToken: prismaSession.session_token,
         userId: prismaSession.user_id,
         expires: prismaSession.expires,
-        sessionToken: prismaSession.session_token,
       }
     },
 

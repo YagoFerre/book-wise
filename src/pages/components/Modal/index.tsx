@@ -15,8 +15,6 @@ import { LoginModal } from '../LoginModal'
 import { api } from '@/src/lib/axios'
 import { Book } from '@/src/dtos'
 
-import eu from '../../../assets/103700322.jpg'
-
 import {
   Actions,
   ButtonIcon,
@@ -35,6 +33,7 @@ import {
   Title,
   Username,
 } from './styles'
+import { useSession } from 'next-auth/react'
 
 interface Props extends Dialog.DialogProps {
   data: Book
@@ -66,15 +65,19 @@ export function Modal({ data, width, height, ...rest }: Props) {
   const [isOpen, setIsOpen] = useState(false)
   // const [user, setUser] = useState(true)
 
+  const session = useSession()
+
   function handleOpenLoginModal() {
-    setIsOpen(true)
+    if (session.data) {
+      setIsOpen(true)
+    }
   }
 
-  async function handleComment(data: CommentFormData) {
+  async function handleComment(dataRate: CommentFormData) {
     try {
-      await api.post('/rating', {
-        rate: data.rate,
-        description: data.description,
+      await api.post(`/rating/${data.id}`, {
+        rate: dataRate.rate,
+        description: dataRate.description,
       })
     } catch (err) {
       console.log(err)
@@ -102,8 +105,8 @@ export function Modal({ data, width, height, ...rest }: Props) {
               {isOpen && (
                 <CommentBox onSubmit={handleSubmit(handleComment)}>
                   <Header>
-                    <UserPhoto src={eu} alt="Foto do usuário" size={40} />
-                    <Username>Yago Ferreira</Username>
+                    <UserPhoto src={session.data?.user.avatar_url!} alt="Foto do usuário" size={40} />
+                    <Username>{session.data?.user.name}</Username>
 
                     <Rating>
                       {[...Array(5)].map((_, index) => (

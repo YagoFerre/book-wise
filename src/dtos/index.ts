@@ -77,4 +77,11 @@ type Session = {
   user: User
 }
 
-export type { User, Session, Rating, Category, CategoriesOnBooks, Book, Account }
+type AverageRating = {
+  book_id: string
+  _avg: {
+    rate: number
+  }
+}
+
+export type { User, Session, Rating, Category, CategoriesOnBooks, Book, Account, AverageRating }
