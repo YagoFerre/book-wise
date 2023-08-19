@@ -11,8 +11,8 @@ export function buildNextAuthOptions(req: NextApiRequest, res: NextApiResponse):
     adapter: PrismaAdapter(req, res),
     providers: [
       GoogleProvider({
-        clientId: process.env.GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+        clientId: process.env.GOOGLE_CLIENT_ID ?? '',
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
         authorization: {
           params: {
             scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
@@ -28,8 +28,8 @@ export function buildNextAuthOptions(req: NextApiRequest, res: NextApiResponse):
         },
       }),
       GitHubProvider({
-        clientId: process.env.GITHUB_CLIENT_ID!,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+        clientId: process.env.GITHUB_CLIENT_ID ?? '',
+        clientSecret: process.env.GITHUB_CLIENT_SECRET ?? '',
         authorization: {
           url: 'https://github.com/login/oauth/authorize',
           params: {

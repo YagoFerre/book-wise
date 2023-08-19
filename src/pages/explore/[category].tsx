@@ -10,7 +10,7 @@ import { Input } from '../components/Input'
 import { Tag } from './components/Tag'
 
 import { prisma } from '@/src/lib/prisma'
-import { Category, Book, AverageRating } from '@/src/dtos'
+import { Category, Book, AverageRating, Rating } from '@/src/dtos'
 
 import { BooksContainer, Categories, Container, Content, InputBox, PageHeading } from './styles'
 import { api } from '@/src/lib/axios'
@@ -19,10 +19,9 @@ interface Props {
   categories: Category[]
   books: Book[]
   booksByCategory: Book[]
-  isRead: boolean
 }
 
-export default function Explore({ categories, books, booksByCategory, isRead }: Props) {
+export default function Explore({ categories, books, booksByCategory }: Props) {
   const [selectedTag, setSelectedTag] = useState('tudo')
   const [querySearch, setQuerySearch] = useState('')
 
@@ -83,7 +82,7 @@ export default function Explore({ categories, books, booksByCategory, isRead }: 
 
         <BooksContainer>
           {filteredBooks.map((book) => (
-            <BookCard key={book.id} data={book} isRead={isRead} width={108} height={152} />
+            <BookCard key={book.id} data={book} width={108} height={152} />
           ))}
         </BooksContainer>
       </Content>
@@ -122,9 +121,16 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
         categories: {
           some: {
             category: {
-              name: {
-                contains: selectedTag,
-              },
+              OR: [
+                {
+                  name: {
+                    contains: selectedTag,
+                  },
+                },
+                {
+                  id: null,
+                },
+              ],
             },
           },
         },
@@ -157,25 +163,25 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     })
     .then((response) => JSON.parse(JSON.stringify(response)))
 
+  const { data } = await api.get('/user/read-books')
+  const userRatings = data as Rating[]
+
   const booksByCategory = booksByCategoryData.map((book: Book) => {
     const averageRating = averageRatings.find((rating: AverageRating) => rating.book_id === book.id)
+    const isRead = userRatings.find((userRating) => userRating.book_id === book.id)
 
     return {
       ...book,
       rate: averageRating?._avg.rate,
+      isRead: isRead || false,
     }
   })
-
-  const { data } = await api.get('/user/read-books')
-  const isRead = data
-  // console.log(isRead)
 
   return {
     props: {
       categories,
       books,
       booksByCategory,
-      isRead,
     },
   }
 }
