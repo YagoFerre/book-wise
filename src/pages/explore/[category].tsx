@@ -9,11 +9,11 @@ import { SideBar } from '../components/SideBar'
 import { Input } from '../components/Input'
 import { Tag } from './components/Tag'
 
+import { api } from '@/src/lib/axios'
 import { prisma } from '@/src/lib/prisma'
 import { Category, Book, AverageRating, Rating } from '@/src/dtos'
 
 import { BooksContainer, Categories, Container, Content, InputBox, PageHeading } from './styles'
-import { api } from '@/src/lib/axios'
 
 interface Props {
   categories: Category[]
@@ -94,7 +94,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const categories = await prisma.category.findMany()
   const selectedTag = String(params?.category) || ''
 
-  const books = await prisma.book
+  const booksData = await prisma.book
     .findMany({
       include: {
         ratings: {
@@ -102,7 +102,6 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
             created_at: 'desc',
           },
           include: {
-            book: true,
             user: true,
           },
         },
@@ -121,16 +120,9 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
         categories: {
           some: {
             category: {
-              OR: [
-                {
-                  name: {
-                    contains: selectedTag,
-                  },
-                },
-                {
-                  id: null,
-                },
-              ],
+              name: {
+                contains: selectedTag,
+              },
             },
           },
         },
@@ -141,7 +133,6 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
             created_at: 'desc',
           },
           include: {
-            book: true,
             user: true,
           },
         },
@@ -165,6 +156,17 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
 
   const { data } = await api.get('/user/read-books')
   const userRatings = data as Rating[]
+
+  const books = booksData.map((book: Book) => {
+    const averageRating = averageRatings.find((rating: AverageRating) => rating.book_id === book.id)
+    const isRead = userRatings.find((userRating) => userRating.book_id === book.id)
+
+    return {
+      ...book,
+      rate: averageRating?._avg.rate,
+      isRead: isRead || false,
+    }
+  })
 
   const booksByCategory = booksByCategoryData.map((book: Book) => {
     const averageRating = averageRatings.find((rating: AverageRating) => rating.book_id === book.id)

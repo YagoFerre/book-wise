@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { FormEvent, useState } from 'react'
 
 import * as Dialog from '@radix-ui/react-dialog'
 import * as z from 'zod'
@@ -74,14 +74,12 @@ export function Modal({ data, width, height, ...rest }: Props) {
   }
 
   async function handleComment(dataRate: CommentFormData) {
-    try {
-      await api.post(`/rating/${data.id}`, {
-        rate: dataRate.rate,
-        description: dataRate.description,
-      })
-    } catch (err) {
-      console.log(err)
-    }
+    await api.post(`/rating/${data.id}`, {
+      rate: dataRate.rate,
+      description: dataRate.description,
+    })
+
+    setIsOpen(false)
   }
 
   return (
@@ -103,7 +101,7 @@ export function Modal({ data, width, height, ...rest }: Props) {
               </CommentsHeader>
 
               {isOpen && (
-                <CommentBox onSubmit={handleSubmit(handleComment)}>
+                <CommentBox as="form" onSubmit={handleSubmit(handleComment)}>
                   <Header>
                     <UserPhoto src={session.data?.user.avatar_url!} alt="Foto do usuário" size={40} />
                     <Username>{session.data?.user.name}</Username>
@@ -128,14 +126,14 @@ export function Modal({ data, width, height, ...rest }: Props) {
                     <ButtonIcon onClick={() => setIsOpen(false)}>
                       <X size={24} color="#8381D9" />
                     </ButtonIcon>
-                    <ButtonIcon onSubmit={handleSubmit(handleComment)}>
+                    <ButtonIcon type="submit">
                       <Check size={24} color="#50B2C0" />
                     </ButtonIcon>
                   </Actions>
                 </CommentBox>
               )}
 
-              {data.ratings?.map((comment) => (
+              {data.ratings.map((comment) => (
                 <CommentCard key={comment.id} comment={comment} />
               ))}
             </Comments>
