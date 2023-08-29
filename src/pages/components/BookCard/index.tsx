@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSession } from 'next-auth/react'
 
 import Image from 'next/image'
 
@@ -16,6 +17,8 @@ interface Props {
 
 export function BookCard({ width, height, data }: Props) {
   const [open, setOpen] = useState(false)
+
+  const session = useSession()
 
   return (
     <>
@@ -45,7 +48,7 @@ export function BookCard({ width, height, data }: Props) {
           </Rating>
         </Content>
 
-        {data.isRead && <Read>lido</Read>}
+        {session.data && data.isRead && <Read>lido</Read>}
       </Container>
     </>
   )

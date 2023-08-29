@@ -1,11 +1,19 @@
+import { useState } from 'react'
+import { useRouter } from 'next/router'
+
 import { CaretRight, Star } from '@phosphor-icons/react'
+
 import { formatDistanceToNow } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
+
+import { Rating as RatingDTO } from '@/src/dtos'
+import { Description } from '../Description'
+
+import { Modal } from '@/src/pages/components/Modal'
 
 import {
   BookAuthor,
   BookCover,
-  BookDescription,
   BookTitle,
   Container,
   Content,
@@ -16,11 +24,6 @@ import {
   SeeAll,
   SubtitleBox,
 } from './styles'
-import { Rating as RatingDTO } from '@/src/dtos'
-import { Description } from '../Description'
-import { useRouter } from 'next/router'
-import { useState } from 'react'
-import { Modal } from '@/src/pages/components/Modal'
 
 interface Props {
   data: RatingDTO
@@ -71,7 +74,6 @@ export function LatestReading({ data }: Props) {
             </div>
 
             <Description text={data.description} />
-            {/* <BookDescription>{data.ratings[0].description}</BookDescription> */}
           </Main>
         </Content>
       </LatestBook>

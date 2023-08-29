@@ -28,7 +28,7 @@ export function SideBar() {
             <ChartLineUp size={24} />
             Início
           </MenuLink>
-          <MenuLink href="/explore/tudo" active={pathname === '/explore/[category]'}>
+          <MenuLink href="/explore" active={pathname === '/explore'}>
             <Binoculars size={24} />
             Explorar
           </MenuLink>

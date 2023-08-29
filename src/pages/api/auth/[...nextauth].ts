@@ -26,6 +26,7 @@ export function buildNextAuthOptions(req: NextApiRequest, res: NextApiResponse):
             avatar_url: profile.picture,
           }
         },
+        allowDangerousEmailAccountLinking: true,
       }),
       GitHubProvider({
         clientId: process.env.GITHUB_CLIENT_ID ?? '',
@@ -44,6 +45,7 @@ export function buildNextAuthOptions(req: NextApiRequest, res: NextApiResponse):
             avatar_url: profile.avatar_url,
           }
         },
+        allowDangerousEmailAccountLinking: true,
       }),
     ],
 

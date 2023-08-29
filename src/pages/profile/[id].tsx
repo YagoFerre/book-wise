@@ -1,7 +1,10 @@
+import { useState } from 'react'
 import { GetServerSideProps } from 'next'
 
-import { getYear } from 'date-fns'
+import { useRouter } from 'next/router'
+import { useQuery } from '@tanstack/react-query'
 
+import { getYear } from 'date-fns'
 import { BookOpen, BookmarkSimple, Books, User, UserList } from '@phosphor-icons/react'
 
 import { SideBar } from '../components/SideBar'
@@ -9,8 +12,9 @@ import { Input } from '../components/Input'
 import { BookCardProfile } from './components/BookCardProfile'
 import { UserPhoto } from '../components/UserPhoto'
 
+import { api } from '@/src/lib/axios'
 import { prisma } from '@/src/lib/prisma'
-import { AverageRating, Book, Rating, User as UserDTO } from '@/src/dtos'
+import { Rating, User as UserDTO } from '@/src/dtos'
 
 import {
   AnalyticsUser,
@@ -29,7 +33,6 @@ import {
 } from './styles'
 
 interface Props {
-  profile: UserDTO
   readPages: {
     _sum: {
       total_pages: number
@@ -42,10 +45,30 @@ interface Props {
   mostReadCategory: {
     name: string
   }
-  myRatings: Rating[]
 }
 
-export default function Profile({ profile, readPages, ratedBooks, readAuthors, mostReadCategory, myRatings }: Props) {
+export default function Profile({ readPages, ratedBooks, readAuthors, mostReadCategory }: Props) {
+  const [querySearch, setQuerySearch] = useState('')
+
+  const { query } = useRouter()
+
+  const { data: myRatings } = useQuery<Rating[]>(['ratings', query.id], async () => {
+    const { data } = await api.get(`/user/${query.id}`)
+    return data?.myRatings
+  })
+
+  const { data: profile } = useQuery<UserDTO>(['profile', query.id], async () => {
+    const { data } = await api.get(`/user/${query.id}`)
+    return data?.profile
+  })
+
+  const filteredRatings = myRatings?.filter((rating) => {
+    return (
+      rating.book.name.toLowerCase().includes(querySearch.toLocaleLowerCase()) ||
+      rating.book.author.toLocaleLowerCase().includes(querySearch.toLocaleLowerCase())
+    )
+  })
+
   return (
     <Container>
       <SideBar />
@@ -58,10 +81,10 @@ export default function Profile({ profile, readPages, ratedBooks, readAuthors, m
           </TitleBox>
 
           <BookListContent>
-            <Input placeholder="Buscar livro avaliado" />
+            <Input placeholder="Buscar livro avaliado" onChange={(e) => setQuerySearch(e.target.value)} />
 
             <BookCardContainer>
-              {myRatings?.map((rate) => (
+              {filteredRatings?.map((rate) => (
                 <BookCardProfile key={rate.id} data={rate} />
               ))}
             </BookCardContainer>
@@ -73,7 +96,7 @@ export default function Profile({ profile, readPages, ratedBooks, readAuthors, m
             <UserPhoto src={profile?.avatar_url!} alt="Foto do usuário" size={72} />
 
             <UserName>{profile?.name}</UserName>
-            <MemberSince>membro desde {getYear(new Date(profile?.created_at)) || 2000}</MemberSince>
+            <MemberSince>membro desde {getYear(new Date(String(profile?.created_at)))}</MemberSince>
 
             <div />
           </UserDetails>
@@ -117,7 +140,7 @@ export default function Profile({ profile, readPages, ratedBooks, readAuthors, m
 
               <div>
                 <Text>
-                  <strong>{mostReadCategory?.name || 'Nenhuma'}</strong>
+                  <strong>{mostReadCategory?.name ?? 'Nenhuma'}</strong>
                   <p>Categoria mais lida</p>
                 </Text>
               </div>
@@ -132,92 +155,6 @@ export default function Profile({ profile, readPages, ratedBooks, readAuthors, m
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const userId = String(params?.id)
 
-  const profile: UserDTO = await prisma.user
-    .findFirst({
-      where: {
-        id: userId,
-      },
-      include: {
-        ratings: {
-          orderBy: {
-            created_at: 'desc',
-          },
-          include: {
-            book: {
-              include: {
-                categories: { include: { category: true } },
-                ratings: {
-                  include: {
-                    user: true,
-                    book: {
-                      include: { ratings: true },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    })
-    .then((response) => JSON.parse(JSON.stringify(response)))
-
-  const booksData = await prisma.book
-    .findMany({
-      where: {
-        ratings: {
-          some: {
-            user_id: userId,
-          },
-        },
-      },
-      include: {
-        ratings: {
-          orderBy: {
-            created_at: 'desc',
-          },
-          include: {
-            book: true,
-            user: true,
-          },
-        },
-        categories: {
-          include: {
-            category: true,
-          },
-        },
-      },
-    })
-    .then((response) => JSON.parse(JSON.stringify(response)))
-
-  const averageRatings: AverageRating[] = await prisma.rating
-    .groupBy({
-      by: ['book_id'],
-      _avg: {
-        rate: true,
-      },
-    })
-    .then((response) => JSON.parse(JSON.stringify(response)))
-
-  const books: Book[] = booksData.map((book: Book) => {
-    const averageRating = averageRatings.find((rating) => rating.book_id === book.id)
-
-    return {
-      ...book,
-      rate: averageRating?._avg.rate,
-    }
-  })
-
-  const myRatings = profile.ratings.map((profile: Rating) => {
-    const bookFormatted = books.find((book) => book.id === profile.book_id)
-    return {
-      ...profile,
-      book: bookFormatted,
-    }
-  })
-
-  console.log(myRatings)
-
   const readPages = await prisma.book.aggregate({
     where: {
       ratings: {
@@ -231,15 +168,11 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     },
   })
 
-  // console.log(readPages)
-
   const ratedBooks = await prisma.rating.count({
     where: {
       user_id: userId,
     },
   })
-
-  // console.log(ratedBooks)
 
   const readAuthors = await prisma.book.count({
     where: {
@@ -253,8 +186,6 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       author: true,
     },
   })
-
-  // console.log(readAuthors)
 
   const mostReadCategoryId = await prisma.categoriesOnBooks.groupBy({
     by: ['categoryId'],
@@ -275,24 +206,18 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     take: 1,
   })
 
-  // console.log(mostReadCategoryId)
-
   const mostReadCategory = await prisma.category.findFirst({
     where: {
       id: mostReadCategoryId[0]?.categoryId,
     },
   })
 
-  // console.log(mostReadCategory)
-
   return {
     props: {
-      profile,
       readPages,
       ratedBooks,
       readAuthors,
       mostReadCategory,
-      myRatings,
     },
   }
 }

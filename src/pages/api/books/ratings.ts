@@ -7,7 +7,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).end()
   }
 
-  const userSession = await prisma.session.findFirst()
+  const ratingsData = await prisma.rating.findMany({
+    include: {
+      user: true,
+      book: {
+        include: {
+          categories: {
+            include: {
+              category: true,
+            },
+          },
+          ratings: {
+            include: {
+              user: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      created_at: 'desc',
+    },
+  })
 
   const averageRatings = await prisma.rating.groupBy({
     by: ['book_id'],
@@ -19,6 +40,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const booksData = await prisma.book.findMany({
     include: {
       ratings: {
+        orderBy: {
+          created_at: 'desc',
+        },
         include: {
           book: true,
           user: true,
@@ -41,21 +65,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
   })
 
-  const lastReadingData = await prisma.rating.findFirst({
-    where: {
-      user_id: String(userSession?.user_id),
-    },
-    orderBy: {
-      created_at: 'desc',
-    },
-    include: {
-      book: true,
-    },
+  const ratings = ratingsData.map((rating) => {
+    const bookFormatted = books.find((book) => book.id === rating.book_id)
+    return {
+      ...rating,
+      book: bookFormatted,
+    }
   })
 
-  const bookFormatted = books.find((book) => book.id === lastReadingData?.book_id)
-
-  const lastReading = { ...lastReadingData, book: bookFormatted }
-
-  return res.status(201).json({ lastReading })
+  return res.status(201).json({ ratings })
 }

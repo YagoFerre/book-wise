@@ -107,10 +107,3 @@ export const BookAuthor = styled('span', {
   lineHeight: '$base',
   fontWeight: '$regular',
 })
-
-export const BookDescription = styled('p', {
-  color: '$gray300',
-  fontSize: '$sm',
-  lineHeight: '$base',
-  fontWeight: '$regular',
-})

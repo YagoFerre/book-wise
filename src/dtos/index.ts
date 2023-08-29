@@ -14,7 +14,7 @@ type Book = {
   id: string
   name: string
   rate: number
-  isRead: boolean
+  isRead?: boolean
   author: string
   summary: string
   cover_url: string

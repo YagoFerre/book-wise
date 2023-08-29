@@ -1,7 +1,11 @@
-import { FormEvent, useState } from 'react'
+import { useState } from 'react'
+
+import { useSession } from 'next-auth/react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import * as Dialog from '@radix-ui/react-dialog'
 import * as z from 'zod'
+
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 
@@ -33,12 +37,9 @@ import {
   Title,
   Username,
 } from './styles'
-import { useSession } from 'next-auth/react'
 
 interface Props extends Dialog.DialogProps {
   data: Book
-  width?: number
-  height?: number
 }
 
 const commentSchema = z.object({
@@ -52,7 +53,7 @@ const commentSchema = z.object({
 
 export type CommentFormData = z.infer<typeof commentSchema>
 
-export function Modal({ data, width, height, ...rest }: Props) {
+export function Modal({ data, ...rest }: Props) {
   const { register, handleSubmit, watch, setValue } = useForm<CommentFormData>({
     resolver: zodResolver(commentSchema),
     defaultValues: {
@@ -62,25 +63,35 @@ export function Modal({ data, width, height, ...rest }: Props) {
 
   const rate = watch('rate')
 
-  const [isOpen, setIsOpen] = useState(false)
-  // const [user, setUser] = useState(true)
-
   const session = useSession()
+  const queryClient = useQueryClient()
 
-  function handleOpenLoginModal() {
+  const [isOpen, setIsOpen] = useState(false)
+
+  async function handleOpenLoginModal() {
     if (session.data) {
       setIsOpen(true)
     }
   }
 
-  async function handleComment(dataRate: CommentFormData) {
-    await api.post(`/rating/${data.id}`, {
-      rate: dataRate.rate,
-      description: dataRate.description,
-    })
+  const { mutateAsync: handleComment } = useMutation(
+    async (dataRate: CommentFormData) => {
+      await api.post(`/rating/${data.id}`, {
+        rate: dataRate.rate,
+        description: dataRate.description,
+      })
 
-    setIsOpen(false)
-  }
+      setIsOpen(false)
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['books'] })
+        queryClient.invalidateQueries({ queryKey: ['ratings'] })
+        queryClient.invalidateQueries({ queryKey: ['popular'] })
+        queryClient.invalidateQueries({ queryKey: ['last-reading'] })
+      },
+    },
+  )
 
   return (
     <Root {...rest}>
@@ -100,10 +111,10 @@ export function Modal({ data, width, height, ...rest }: Props) {
                 {!isOpen && <LoginModal onComment={handleOpenLoginModal} />}
               </CommentsHeader>
 
-              {isOpen && (
+              {isOpen && session.data && (
                 <CommentBox as="form" onSubmit={handleSubmit(handleComment)}>
                   <Header>
-                    <UserPhoto src={session.data?.user.avatar_url!} alt="Foto do usuário" size={40} />
+                    <UserPhoto src={session.data?.user.avatar_url} alt="Foto do usuário" size={40} />
                     <Username>{session.data?.user.name}</Username>
 
                     <Rating>
@@ -112,7 +123,7 @@ export function Modal({ data, width, height, ...rest }: Props) {
                           key={index}
                           size={28}
                           color="#8381D9"
-                          weight={index <= rate! ? 'fill' : 'thin'}
+                          weight={index <= rate ? 'fill' : 'thin'}
                           onClick={() => setValue('rate', index)}
                           cursor="pointer"
                         />
@@ -133,7 +144,7 @@ export function Modal({ data, width, height, ...rest }: Props) {
                 </CommentBox>
               )}
 
-              {data.ratings.map((comment) => (
+              {data?.ratings.map((comment) => (
                 <CommentCard key={comment.id} comment={comment} />
               ))}
             </Comments>

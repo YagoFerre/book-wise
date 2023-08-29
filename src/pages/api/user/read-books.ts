@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+
 import { prisma } from '@/src/lib/prisma'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -23,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const readBooks = await prisma.rating.findMany({
     where: {
-      user_id: userSession?.user_id,
+      user_id: String(userSession?.user_id),
     },
   })
 
